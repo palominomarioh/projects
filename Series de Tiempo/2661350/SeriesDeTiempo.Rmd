@@ -1,0 +1,117 @@
+---
+title: "Modelo de Series de Tiempo"
+author: "Mario H. Palomino Ludeña"
+date: "22/06/2021"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# LLamado de las librerias requeridas
+```{r}
+library(readxl)
+library(xts)
+library(lubridate)
+library(forecast)
+
+```
+
+Esto es una prueba =)
+Se puede cambiar el nombre de la variable "file" abajo
+
+# Lectura de los Datos Historicos
+```{r}
+file = "Carlson_Data.xlsx"
+
+df = read_excel(file)
+```
+
+# Construcción de la Serie de tiempos y Gráfica
+```{r}
+Sales.ts = ts(df[2],start = c(2015,9),frequency = 12)
+
+plot(Sales.ts)
+
+Sales.ts
+
+```
+
+
+
+
+# Descomposición de la serie de tiempo
+```{r}
+plot(decompose(Sales.ts))
+
+```
+
+
+## Definición del Modelo - Suavización Exponencial
+```{r}
+model1.ts = HoltWinters(Sales.ts,beta = FALSE, gamma = FALSE)
+
+```
+
+### Resultados del Modelo
+```{r}
+plot(model1.ts)
+
+model1.ts
+model1.ts$SSE
+```
+
+
+## Definición del Modelo - Suavización exponencial y tendencia
+```{r}
+model2.ts = HoltWinters(Sales.ts,gamma = FALSE )
+```
+
+### Resultados del Modelo
+```{r}
+plot(model2.ts)
+
+model2.ts
+model2.ts$SSE
+```
+##
+Definición del Modelo - Suavización exponencial - tendencia y Estacionalidad
+```{r}
+model3.ts = HoltWinters(Sales.ts)
+```
+
+### Resultados del Modelo
+```{r}
+plot(model3.ts)
+
+model3.ts
+model3.ts$SSE
+```
+### Pronóstico
+```{r}
+forecast = forecast(model3.ts,h=4)
+
+```
+
+### Resultados del Pronóstico
+```{r}
+forecast
+
+sum(forecast$mean)
+
+
+```
+
+
+# Representación Gráfica del Pronóstico
+```{r}
+plot(forecast)
+```
+## Análisis:
+  En base a los resultados obtenidos ...........
+
+

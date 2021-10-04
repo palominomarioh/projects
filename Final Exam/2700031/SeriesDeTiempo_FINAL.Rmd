@@ -1,0 +1,121 @@
+---
+title: "Pregunta 3"
+author: "Mario H. Palomino"
+date: "10/07/2021"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# LLamado de las librerias requeridas
+```{r}
+library(readxl)
+library(xts)
+library(lubridate)
+library(forecast)
+
+```
+
+
+
+# Lectura de los Datos Historicos
+```{r}
+file = "DATOS_EF_SCA_2021.xlsx"
+
+df = read_excel(file)
+```
+
+# Construcción de la Serie de tiempos y Gráfica
+```{r}
+Sales.ts = ts(df[2],start = c(2017,1),frequency = 12)
+
+plot(Sales.ts)
+
+Sales.ts
+
+```
+
+
+
+
+# Descomposición de la serie de tiempo
+```{r}
+plot(decompose(Sales.ts))
+
+```
+Presentamos el gráfico de la demanda histórica identificando los componentes de series de tiempo. La serie de tiempo de la empresa presenta un componente de tendencia (positiva), estacionalidad y un componente irregular (debido a los errores).
+
+## Definición del Modelo - Suavización Exponencial
+```{r}
+model1.ts = HoltWinters(Sales.ts,beta = FALSE, gamma = FALSE)
+
+```
+
+### Resultados del Modelo
+```{r}
+plot(model1.ts)
+
+model1.ts
+model1.ts$SSE
+```
+Al utilizar el modelo HoltWinters sin considerar la tendencia ni estacionalidad (únicamente la suavización exponencial) podemos ver gráficamente que el modelo falla. El SSE es alto.
+
+## Definición del Modelo - Suavización exponencial y tendencia
+```{r}
+model2.ts = HoltWinters(Sales.ts,gamma = FALSE )
+```
+
+### Resultados del Modelo
+```{r}
+plot(model2.ts)
+
+model2.ts
+model2.ts$SSE
+```
+Al utilizar el modelo HoltWinters sin considerar la estacionalidad (únicamente la suavización exponencial y tendencia) podemos ver gráficamente que el modelo falla. El SSE sigue siendo alto.
+
+##
+Definición del Modelo - Suavización exponencial - tendencia y Estacionalidad
+```{r}
+model3.ts = HoltWinters(Sales.ts)
+```
+
+### Resultados del Modelo
+```{r}
+plot(model3.ts)
+
+model3.ts
+model3.ts$SSE
+```
+Al utilizar el modelo HoltWinters considerando la suavización exponencial, la tendencia y la estacionalidad podemos ver gráficamente que el modelo predice con relativa exactitud los valores de la demanda. El SSE es el menor encontrado con un valor de 19081771.
+
+### Pronóstico
+```{r}
+forecast = forecast(model3.ts,h=12)
+
+```
+
+### Resultados del Pronóstico
+```{r}
+forecast
+
+sum(forecast$mean)
+
+
+```
+La demanda proyectada para el presente año comercial 2021 es de 170372.6 y los detalles mes a mes se presentan en el cuadro anterior.
+
+# Representación Gráfica del Pronóstico
+Presentamos el gráfico de la demanda históricas Reales Vs Demanda proyectada al término del presente año 2021.
+```{r}
+plot(forecast)
+```
+## Análisis:
+  En base a los resultados obtenidos se presenta a la empresa distribuidora un modelo validado de proyección de demanda.
+
+

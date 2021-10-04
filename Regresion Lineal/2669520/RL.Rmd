@@ -1,0 +1,126 @@
+---
+title: "Regresion Lineal"
+author: "Mario H. Palomino Ludena"
+date: "25/6/2021"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+### Importar los datos
+df = read.csv("DuffyIndustries_RawData.csv")
+### Mostrar la cabecera de los datos
+head(df)
+tail(df)
+```
+
+# Análisis de Correlación
+```{r}
+# Cómo se relacionan las variables?
+attach(df)
+plot(Dist,CPL, col= "blue")
+plot(Wgt,CPL, col= "red")
+plot(TrlLng,CPL, col = "green")
+```
+```{r}
+# Generar una matriz de correlación
+# No considerar las variables no numéricas
+cor(df[,c(-1,-7)])
+
+```
+
+# Especificación del modelo
+
+```{r}
+fit = lm(CPL ~ Dist)
+
+```
+
+# Resultados del Modelo
+```{r}
+summary(fit)
+```
+
+# Representación gráfica del Modelo
+```{r}
+plot(Dist,CPL, col = "blue")
+abline(fit, col = "red",lty = 2)
+```
+```{r}
+library(HH)
+ci.plot(fit)
+```
+
+# Comunicar el valor del intervalo de confianza, pero además el valor de predicción. El primero construye un intervalo sobre cuál sería el valor medio, el segundo sobre cuál sería el valor de la predicción.
+
+# Validación del modelo
+
+## Prueba de Linealidad
+
+```{r}
+#verificar la significancia de los coeficientes
+summary(fit)
+#aquí empezó a gotear y perdí esta parte =(
+confint(fit)
+```
+
+## Análisis
+ A partir de los resultados obtenidos anteriormente podemos asumir la presencia de linealidad en el modelo especificado.
+ 
+## Prueba de normalidad de los residuos
+```{r, echo = FALSE}
+hist(fit$residuals)
+plot(density(fit$residuals))
+# hacemos la prueba de normalidad
+shapiro.test(fit$residuals)
+plot(fit, which = 2)
+```
+
+### Análisis:
+ De los resultados anteriores, podemos evidenciar normalidad en los residuos.
+
+## Prueba de varianza constante (Homocedasticidad)
+```{r}
+library(car)
+ncvTest(fit)
+```
+### Análisis:
+ De los resultados anteriores, podemos evidenciar homocedasticidad.
+
+## Predicción del valor esperado:
+```{r,echo=FALSE}
+Distvalues = data.frame(Dist = c(1450,1600,1800))
+
+predict(fit,newdata = Distvalues,interval = "confidence")
+```
+
+## Predicción puntual de un valor específico
+```{r}
+Dist = data.frame(Dist = c(1600))
+predict(fit,newdata = Dist,interval = "prediction")
+```
+## Incorporar una variable categórica en el modelo
+ En este caso transformando la variable EQUIPMENT
+```{r}
+library(dplyr)
+df2 = df%>%
+  mutate(REF = ifelse(Equpt == "DRY",0,1))
+
+attach(df2)
+
+```
+```{r}
+fit2 = lm(df2$CPL ~ df2$Dist + df2$REF)
+
+summary(fit2)
+```
+No es una variable significativa el hecho que sea REF o DRY.
+
+## Tarea
+ Variable LdTime.
+ El hecho que hagamos el pedido el mismo día, tiene influencia en el costo?
+ Transformar la variable. Si es el mismo día = 1, sino = 0.
+ 
